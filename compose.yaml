@@ -1,0 +1,40 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: bandnames_web
+    env_file:
+      - .env
+    ports:
+      - "8085:8000"   # Web accessible sur http://localhost:8085
+    depends_on:
+      - db
+    develop:
+      watch:
+        - path: ./web
+          target: /app
+          action: sync+restart
+
+  db:
+    image: mysql:8.0
+    container_name: bandnames_db
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    
+
+  admin:
+    image: adminer:latest
+    container_name: bandnames_admin
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8086:8080"
+
+volumes:
+  db_data:
